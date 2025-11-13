@@ -1,0 +1,76 @@
+// "Quem são os usuários mais influentes da plataforma?"
+MATCH (u:User)-[:CREATED]->(p:Post)
+RETURN 
+  u.username as Usuario,
+  u.verified as Verificado,
+  COUNT(p) as TotalPosts,
+  SUM(p.likes) as TotalLikes,
+  SUM(p.shares) as TotalShares,
+  SUM(p.likes) + SUM(p.shares) as EngajamentoTotal
+ORDER BY EngajamentoTotal DESC
+
+// "Quais são os posts mais populares da rede?"
+MATCH (p:Post)<-[:CREATED]-(u:User)
+RETURN 
+  p.content as Post,
+  u.username as Autor,
+  p.likes as Curtidas,
+  p.shares as Compartilhamentos,
+  p.likes + (p.shares * 2) as PontuacaoEngajamento
+ORDER BY PontuacaoEngajamento DESC
+LIMIT 10
+
+//  "Quem eu deveria seguir? (pessoas que postam conteúdo similar)"
+MATCH (eu:User {username: "ana_silva"})-[:LIKED]->(postCurtido:Post)
+MATCH (outroUser:User)-[:CREATED]->(postCurtido)
+WHERE outroUser <> eu
+RETURN 
+  outroUser.username as Recomendacao,
+  COUNT(postCurtido) as PostsCurtidosEmComum,
+  outroUser.verified as Verificado
+ORDER BY PostsCurtidosEmComum DESC
+LIMIT 5
+
+// "Quem são meus seguidores e quem eu sigo?"
+MATCH (eu:User {username: "ana_silva"})
+OPTIONAL MATCH (eu)-[:FOLLOWS]->(seguindo:User)
+OPTIONAL MATCH (eu)<-[:FOLLOWS]-(seguidores:User)
+RETURN 
+  eu.username as Usuario,
+  COLLECT(seguindo.username) as EuSigo,
+  COLLECT(seguidores.username) as MeSeguem,
+  COUNT(seguindo) as TotalSeguindo,
+  COUNT(seguidores) as TotalSeguidores
+
+// "Qual o histórico de atividades dos usuários?"
+MATCH (u:User)
+OPTIONAL MATCH (u)-[:CREATED]->(posts:Post)
+OPTIONAL MATCH (u)-[:LIKED]->(curtidas:Post)
+OPTIONAL MATCH (u)-[:SHARED]->(compartilhamentos:Post)
+RETURN 
+  u.username as Usuario,
+  u.join_date as DataIngresso,
+  COUNT(posts) as PostsCriados,
+  COUNT(curtidas) as PostsCurtidos,
+  COUNT(compartilhamentos) as PostsCompartilhados,
+  COUNT(posts) + COUNT(curtidas) + COUNT(compartilhamentos) as TotalAtividades
+ORDER BY TotalAtividades DESC
+
+// "Qual o conteúdo que tem melhor performance?"
+MATCH (p:Post)
+OPTIONAL MATCH (p)<-[:LIKED]-(likes)
+OPTIONAL MATCH (p)<-[:SHARED]-(shares)
+WITH 
+  p,
+  COUNT(likes) as UsuariosQueCurtiram,
+  COUNT(shares) as UsuariosQueCompartilharam
+RETURN 
+  p.content as Conteudo,
+  UsuariosQueCurtiram,
+  UsuariosQueCompartilharam,
+  CASE 
+    WHEN UsuariosQueCurtiram > 0 
+    THEN ROUND(TOFLOAT(UsuariosQueCompartilharam) / UsuariosQueCurtiram * 100, 2)
+    ELSE 0 
+  END as TaxaCompartilhamento
+ORDER BY UsuariosQueCurtiram DESC

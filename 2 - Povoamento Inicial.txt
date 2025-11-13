@@ -1,0 +1,69 @@
+// LIMPEZA DO BANCO
+MATCH (n) DETACH DELETE n;
+
+// CRIAÇÃO DE USUÁRIOS
+CREATE 
+(u1:User {id: "U001", username: "ana_silva", name: "Ana Silva", join_date: "2022-01-15", location: "São Paulo", verified: true}),
+(u2:User {id: "U002", username: "carlos_lima", name: "Carlos Lima", join_date: "2021-11-20", location: "Rio de Janeiro", verified: true}),
+(u3:User {id: "U003", username: "maria_oliveira", name: "Maria Oliveira", join_date: "2022-03-10", location: "Belo Horizonte", verified: false}),
+(u4:User {id: "U004", username: "joao_santos", name: "João Santos", join_date: "2023-01-08", location: "Porto Alegre", verified: false});
+
+// CRIAÇÃO DE POSTS
+CREATE
+(p1:Post {id: "P001", content: "Novo framework JavaScript lançado!", post_date: "2023-11-15", likes: 150, shares: 45}),
+(p2:Post {id: "P002", content: "Dicas de carreira em tecnologia", post_date: "2023-11-14", likes: 89, shares: 23}),
+(p3:Post {id: "P003", content: "Receita de pão caseiro fácil", post_date: "2023-11-12", likes: 34, shares: 8}),
+(p4:Post {id: "P004", content: "Resenha do último filme", post_date: "2023-11-11", likes: 56, shares: 12});
+
+// RELACIONAMENTOS FOLLOWS
+MATCH (u1:User {id: "U001"}), (u2:User {id: "U002"})
+CREATE (u1)-[:FOLLOWS]->(u2);
+
+MATCH (u1:User {id: "U001"}), (u3:User {id: "U003"})
+CREATE (u1)-[:FOLLOWS]->(u3);
+
+MATCH (u2:User {id: "U002"}), (u4:User {id: "U004"})
+CREATE (u2)-[:FOLLOWS]->(u4);
+
+MATCH (u3:User {id: "U003"}), (u1:User {id: "U001"})
+CREATE (u3)-[:FOLLOWS]->(u1);
+
+// RELACIONAMENTOS CREATED (usuários criando posts)
+MATCH (u1:User {id: "U001"}), (p1:Post {id: "P001"})
+CREATE (u1)-[:CREATED]->(p1);
+
+MATCH (u2:User {id: "U002"}), (p2:Post {id: "P002"})
+CREATE (u2)-[:CREATED]->(p2);
+
+MATCH (u3:User {id: "U003"}), (p3:Post {id: "P003"})
+CREATE (u3)-[:CREATED]->(p3);
+
+MATCH (u4:User {id: "U004"}), (p4:Post {id: "P004"})
+CREATE (u4)-[:CREATED]->(p4);
+
+// INTERAÇÕES LIKED
+MATCH (u1:User {id: "U001"}), (p2:Post {id: "P002"})
+CREATE (u1)-[:LIKED]->(p2);
+
+MATCH (u2:User {id: "U002"}), (p1:Post {id: "P001"})
+CREATE (u2)-[:LIKED]->(p1);
+
+MATCH (u3:User {id: "U003"}), (p4:Post {id: "P004"})
+CREATE (u3)-[:LIKED]->(p4);
+
+MATCH (u4:User {id: "U004"}), (p1:Post {id: "P001"})
+CREATE (u4)-[:LIKED]->(p1);
+
+// INTERAÇÕES SHARED
+MATCH (u1:User {id: "U001"}), (p4:Post {id: "P004"})
+CREATE (u1)-[:SHARED]->(p4);
+
+MATCH (u2:User {id: "U002"}), (p1:Post {id: "P001"})
+CREATE (u2)-[:SHARED]->(p1);
+
+MATCH (u3:User {id: "U003"}), (p2:Post {id: "P002"})
+CREATE (u3)-[:SHARED]->(p2);
+
+// CONSULTA PARA VERIFICAR
+MATCH (u:User)-[:CREATED]->(p:Post)
+RETURN u.username as Usuario, p.content as Post, p.likes as Curtidas;

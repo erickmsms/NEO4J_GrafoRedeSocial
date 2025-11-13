@@ -1,0 +1,4 @@
+// Constraints (integridade)
+CREATE CONSTRAINT unique_user_username FOR (u:User) REQUIRE u.username IS UNIQUE;
+CREATE CONSTRAINT unique_user_id FOR (u:User) REQUIRE u.id IS UNIQUE;
+CREATE CONSTRAINT unique_post_id FOR (p:Post) REQUIRE p.id IS UNIQUE;

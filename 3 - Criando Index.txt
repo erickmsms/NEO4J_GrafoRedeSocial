@@ -1,0 +1,5 @@
+// Índices para posts (busca por conteúdo e ordenação), valores que não tem constraint
+
+CREATE INDEX post_likes_index FOR (p:Post) ON (p.likes);
+CREATE INDEX post_shares_index FOR (p:Post) ON (p.shares);
+CREATE INDEX post_date_index FOR (p:Post) ON (p.post_date);
